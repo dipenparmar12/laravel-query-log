@@ -1,0 +1,34 @@
+{
+  "name": "dipenparmar12/laravel-query-log",
+  "description": "A Laravel package for log queries in user defined log channel. Your all queries will save in the log file, and you can view it anytime.",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Dipen parmar",
+      "email": "dipenparmar12@gmail.com",
+      "role": "Developer"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "php": "^7.1"
+  },
+  "require-dev": {
+  },
+  "autoload": {
+    "psr-4": {
+      "Dipenparmar12\\QueryLog\\": "src"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+          "Dipenparmar12\\QueryLog\\StoreQueryLogServiceProvider"
+      ]
+    }
+  },
+  "config": {
+    "sort-packages": true
+  }
+}
