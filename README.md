@@ -8,7 +8,7 @@ A Laravel package for log queries in user defined log channel. Your all queries 
 
 ## Installation
 
-You can install the package via composer:
+Install the package via composer:
 
 ```bash
 composer require dipenparmar12/laravel-query-log --dev
@@ -73,7 +73,7 @@ If we want to use query logging in multiple log channels, we can archive it by f
 ```dotenv
 QUERY_LOG_CHHANELS='single,daily'
 ``` 
-> **Note**: Make sure The name specified in this option should match one of the channels defined in the ```config/logging.php``` *channels* configuration array.
+> **Note**: Make sure the name specified in this option should match one of the channels defined in the ```config/logging.php``` **channels** configuration array.
 
 ### Changelog
 
