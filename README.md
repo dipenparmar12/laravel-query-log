@@ -36,7 +36,7 @@ return [
     | Here you may configure the log channels for query log.
     | This option defines the default log channel that gets used when writing
     | Query to the logs. The name specified in this option should match
-    | one of the channels defined in the "channels" configuration array.
+    | one of the channels defined in the  `config/logging.php` "channels" configuration array.
     | You can define multiple channels seprated by comman (,) for query log.
     | 
     */
