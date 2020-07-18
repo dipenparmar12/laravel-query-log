@@ -1,7 +1,6 @@
 # Laravel Query Log
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/dipenparmar12/laravel-query-log.svg?style=flat-square)](https://packagist.org/packages/dipenparmar12/laravel-query-log)
-[![Build Status](https://img.shields.io/travis/dipenparmar12/laravel-query-log/master.svg?style=flat-square)](https://travis-ci.org/dipenparmar12/laravel-query-log)
 [![Total Downloads](https://img.shields.io/packagist/dt/dipenparmar12/laravel-query-log.svg?style=flat-square)](https://packagist.org/packages/dipenparmar12/laravel-query-log)
 
 A Laravel package for log queries in user defined log channel. Your all queries will save in the log file, and you can view it anytime.
@@ -11,7 +10,7 @@ A Laravel package for log queries in user defined log channel. Your all queries 
 Install the package via composer:
 
 ```bash
-composer require dipenparmar12/laravel-query-log --dev
+composer require dipenparmar12/laravel-query-log
 ```
 > **Note**: Make sure this package used only in development environment, Otherwise may you face decreased performance in production. 
 
@@ -41,7 +40,7 @@ return [
     | 
     */
 
-    'log_chhanels' =>  env('QUERY_LOG_CHHANELS', "single"),
+    'log_chhanels' =>  env('QUERY_LOG_CHHANELS', null),
 
     /*
     |--------------------------------------------------------------------------

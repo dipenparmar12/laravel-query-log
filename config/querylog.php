@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'log_chhanels' =>  env('QUERY_LOG_CHHANELS', "single"),
+    'log_chhanels' =>  env('QUERY_LOG_CHHANELS', null),
 
     /*
     |--------------------------------------------------------------------------
