@@ -2,74 +2,82 @@
 
 namespace Dipenparmar12\QueryLog;
 
-use DB;
 use Dipenparmar12\QueryLog\Exceptions\QueryLogException;
-use Exception;
-use Illuminate\Config\Repository;
-use Illuminate\Log\LogManager;
+use Throwable;
+use Illuminate\Config\Repository as ConfigRepository;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
-use Log;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
 class StoreQueryLogServiceProvider extends ServiceProvider
 {
-    public $configRepository;
-
     /**
      * Bootstrap the application services.
      */
-    public function boot(Repository $configRepository)
+    public function boot(ConfigRepository $configRepository): void
     {
-        $this->configRepository = $configRepository;
+        $this->publishConfig();
 
-        if ($this->app->runningInConsole()) {
-            $this->publishes([
-                __DIR__ . '/../config/querylog.php' => config_path('querylog.php'),
-            ], 'config');
-        }
-
-        $this->get_log_channels();
-
-        if (config('querylog.query_log_enable') == true) {
+        if (config('querylog.query_log_enable') === true) {
             /// Log all queries executed, performed by Application
             DB::connection()->enableQueryLog();
-            DB::listen(function ($query) {
+
+            DB::listen(function ($query) use ($configRepository) {
                 try {
-                    if (config('querylog.log_chhanels') == null) {
-                        $this->defaultQueryLogger()->info($this->BindQueryLog($query->sql, $query->bindings));
+                    $queryString = $this->bindQueryLog($query->sql, $query->bindings);
+
+                    if (config('querylog.log_chhanels') === null) {
+                        $this->getDefaultQueryLogger()->info($queryString);
                     } else {
-                        Log::stack($this->get_log_channels())->info($this->BindQueryLog($query->sql, $query->bindings));
+                        Log::stack($this->getLogChannels($configRepository))->info($queryString);
                     }
-                } catch (Exception $t) {
-                    throw new QueryLogException($t->getMessage());
+                } catch (Throwable $e) {
+                    throw new QueryLogException($e->getMessage());
                 }
             });
         }
     }
 
+    private function publishConfig(): void
+    {
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__ . '/../config/querylog.php' => config_path('querylog.php'),
+            ], 'config');
+        }
+    }
+
     /**
-     * Get log channels
+     * @param ConfigRepository $configRepository
+     *
      * @return array
      */
-    protected function get_log_channels()
+    protected function getLogChannels(ConfigRepository $configRepository): array
     {
-        $app_channels = collect($this->configRepository->get('logging')['channels'])->pluck('driver');
-        $user_defined_channels = collect(array_filter(explode(',', config('querylog.log_chhanels'))));
-        return $app_channels->intersect($user_defined_channels)->toArray();
-        # (string)"one,two" => ['one', 'two'];
+        $appChannels = collect(
+            $configRepository->get('logging')['channels']
+        )->keys();
+
+        $customChannels = collect(
+            explode(',', config('querylog.log_chhanels'))
+        )->filter();
+
+        return $appChannels->intersect($customChannels)->toArray();
     }
 
     /**
      * By default log queries in db-query log file
+     *
      * @return Logger
      */
-    public function defaultQueryLogger()
+    public function getDefaultQueryLogger(): Logger
     {
-        return new Logger('Query', [
+        return new Logger('db-query', [
             new StreamHandler(
-                $this->app->storagePath() . '/logs/db-query.log'
-                , Logger::DEBUG
+                $this->app->storagePath() . '/logs/db-query.log',
+                Logger::DEBUG
             )
         ]);
     }
@@ -77,28 +85,20 @@ class StoreQueryLogServiceProvider extends ServiceProvider
     /**
      * Bind-Query parameters in Query string
      *
-     * @param $sql
-     * @param $binds
+     * @param string $sql
+     * @param array  $bindings
      *
      * @return string
      */
-    public function BindQueryLog($sql, $binds)
+    public function bindQueryLog(string $sql, array $bindings): string
     {
-        if (empty($binds)) {
+        if (empty($bindings)) {
             return $sql;
         }
-        $sql = str_replace(['%', '?'], ['%%', '%s'], $sql);
-        return vsprintf($sql, $binds);
 
-        /*$result = "";
-        $sql_chunks = explode('?', $sql);
-        foreach ($sql_chunks as $key => $sql_chunk) {
-            if (isset($binds[$key])) {
-                $result .= $sql_chunk . '"' . $binds[$key] . '"';
-            }
-        }
-        $result .= $sql_chunks[count($sql_chunks) - 1];
-        return $result;*/
+        $sql = str_replace(['%', '?'], ['%%', '%s'], $sql);
+
+        return vsprintf($sql, $bindings);
     }
 
     /**
